@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kopi Cyclo - Glass Login</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-glow: rgba(212, 163, 115, 0.6);
+            --success-glow: #10B981;
+            --danger-glow: #EF4444;
+            --info-glow: #3B82F6;
+            --warning-glow: #F59E0B;
+            --text-main: #FFFFFF;
+            --text-muted: rgba(255,255,255,0.7);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+
+        body {
+            background: #1a1512;
+            background-image: 
+                radial-gradient(circle at 10% 20%, #3e2723 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, #5D4037 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, #2d2420 0%, #000000 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* --- Background Orbs (Global) --- */
+        .orb {
+            position: fixed; /* Fixed agar terlihat di login dan app */
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            animation: float 10s infinite ease-in-out alternate;
+        }
+        .orb-1 { width: 300px; height: 300px; background: #6F4E37; top: -50px; left: -50px; opacity: 0.4; }
+        .orb-2 { width: 400px; height: 400px; background: #D4A373; bottom: 10%; right: -100px; opacity: 0.2; animation-delay: -5s; }
+        .orb-3 { width: 200px; height: 200px; background: #8D6E63; top: 40%; left: 30%; opacity: 0.3; animation-duration: 15s; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(30px, 50px); }
+        }
+
+        /* --- Glass Utility --- */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            border-radius: 20px;
+        }
+
+        /* --- Login Screen --- */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+
+        .login-box {
+            width: 90%; max-width: 400px;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .login-logo {
+            font-size: 3rem; margin-bottom: 1rem;
+            background: linear-gradient(to right, #fff, #D4A373);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .form-group { margin-bottom: 1.5rem; text-align: left; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.9rem; }
+        
+        .input-field {
+            width: 100%; padding: 15px; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; background: rgba(0,0,0,0.3); color: white;
+            font-size: 1rem; outline: none; transition: 0.3s;
+        }
+        .input-field:focus { border-color: var(--primary-glow); }
+
+        .btn-login {
+            width: 100%; padding: 15px; border: none; border-radius: 12px;
+            background: linear-gradient(135deg, #D4A373, #A67B5B);
+            color: white; font-weight: 700; font-size: 1.1rem;
+            cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(212, 163, 115, 0.3);
+        }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(212, 163, 115, 0.5); }
+        
+        .error-msg {
+            color: var(--danger-glow); font-size: 0.9rem; margin-bottom: 1rem;
+            min-height: 20px; display: none; text-align: center;
+        }
+
+        /* --- App Container --- */
+        #app-screen { display: none; } /* Hidden by default */
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* --- Header --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .brand h1 { font-size: 2rem; font-weight: 700; background: linear-gradient(to right, #fff, #D4A373); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .brand small { font-weight: 300; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; font-size: 0.8rem; }
+
+        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        
+        .btn-glass {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 500;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .btn-glass:hover { background: var(--text-main); color: #000; box-shadow: 0 0 15px rgba(255,255,255,0.3); }
+        
+        .btn-logout { border-color: rgba(239, 68, 68, 0.3); color: var(--danger-glow); }
+        .btn-logout:hover { background: var(--danger-glow); color: white; box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
+
+        .btn-reset { border-color: rgba(245, 158, 11, 0.3); color: var(--warning-glow); }
+        .btn-reset:hover { background: var(--warning-glow); color: white; box-shadow: 0 0 15px rgba(245, 158, 11, 0.3); }
+
+        /* --- Stats Grid --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        .stat-card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.4); }
+
+        .stat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .stat-icon { 
+            width: 40px; height: 40px; border-radius: 10px; 
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; background: rgba(255,255,255,0.1); color: #fff;
+        }
+        
+        .stat-value { font-size: 1.8rem; font-weight: 700; margin-bottom: 5px; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .stat-label { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+        .st-balance .stat-icon { color: var(--info-glow); box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
+        .st-income .stat-icon { color: var(--success-glow); box-shadow: 0 0 15px rgba(16, 185, 129, 0.3); }
+        .st-expense .stat-icon { color: var(--danger-glow); box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
+        .st-debt .stat-icon { color: var(--warning-glow); box-shadow: 0 0 15px rgba(245, 158, 11, 0.3); }
+
+        /* --- Layout --- */
+        .main-grid { display: grid; grid-template-columns: 380px 1fr; gap: 2rem; }
+        @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+
+        .input-card { padding: 2rem; }
+        .list-card { padding: 2rem; min-height: 500px; }
+
+        .tabs { display: flex; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 15px; margin-bottom: 1.5rem; }
+        .tab-btn { 
+            flex: 1; padding: 12px; border: none; background: transparent; 
+            border-radius: 10px; cursor: pointer; color: var(--text-muted); 
+            font-weight: 600; transition: 0.3s; 
+        }
+        .tab-btn.active { background: var(--text-main); color: #1a1512; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+
+        .form-group input, .form-group select { background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.1); }
+        
+        .btn-submit {
+            width: 100%; padding: 14px; border: none; border-radius: 12px;
+            background: linear-gradient(135deg, #D4A373, #A67B5B);
+            color: white; font-weight: 700; font-size: 1rem;
+            cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(212, 163, 115, 0.3);
+        }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(212, 163, 115, 0.5); }
+        .btn-submit.expense-mode { background: linear-gradient(135deg, #EF4444, #B91C1C); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
+        .btn-submit.expense-mode:hover { box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5); }
+
+        .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; }
+        .search-filter { display: flex; gap: 10px; margin-bottom: 1.5rem; }
+        .search-input { flex: 1; padding: 12px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(0,0,0,0.2); color: white; }
+
+        .trans-list { display: flex; flex-direction: column; gap: 12px; max-height: 600px; overflow-y: auto; padding-right: 5px; }
+        .trans-list::-webkit-scrollbar { width: 6px; }
+        .trans-list::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+        .trans-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+
+        .trans-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px; border-radius: 15px; background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05); transition: 0.3s;
+        }
+        .trans-item:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); transform: translateX(5px); }
+
+        .item-left { display: flex; align-items: center; gap: 15px; }
+        .item-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+        
+        .c-green { color: var(--success-glow); text-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+        .c-red { color: var(--danger-glow); text-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+        .c-yellow { color: var(--warning-glow); text-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
+        .c-blue { color: var(--info-glow); text-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
+
+        .item-info h4 { font-size: 1rem; font-weight: 600; margin-bottom: 4px; }
+        .item-info span { font-size: 0.8rem; color: var(--text-muted); }
+        .item-amount { font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px; }
+
+        .actions { display: flex; gap: 5px; margin-left: 15px; }
+        .btn-icon { border: none; background: transparent; cursor: pointer; padding: 8px; opacity: 0.5; color: white; transition: 0.2s; border-radius: 8px;}
+        .btn-icon:hover { opacity: 1; background: rgba(255,255,255,0.1); }
+
+        /* --- Modal Generic --- */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .modal.active { display: flex; animation: fadeIn 0.3s; }
+        
+        .modal-box { 
+            background: #2d2420; 
+            border: 1px solid rgba(255,255,255,0.1); 
+            width: 90%; max-width: 400px; 
+            padding: 2.5rem; 
+            border-radius: 24px; 
+            text-align: center; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+        }
+
+        /* Modal Reset Specific */
+        .modal-box.danger-mode { border: 1px solid var(--danger-glow); background: rgba(40, 20, 20, 0.95); }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); }
+
+    </style>
+</head>
+<body>
+
+    <!-- Background Animation -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen">
+        <div class="glass login-box">
+            <div class="login-logo"><i class="fas fa-mug-hot"></i></div>
+            <h2 style="margin-bottom: 0.5rem; font-weight: 600;">Kopi Cyclo</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Sistem Kasir Glass Edition</p>
+            
+            <div class="error-msg" id="loginError">ID atau Sandi salah!</div>
+
+            <form onsubmit="doLogin(event)">
+                <div class="form-group">
+                    <label>ID Pengguna</label>
+                    <input type="text" id="username" class="input-field" placeholder="admin123" required>
+                </div>
+                <div class="form-group">
+                    <label>Kata Sandi</label>
+                    <input type="password" id="password" class="input-field" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-login">Masuk Sistem</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- APP SCREEN -->
+    <div id="app-screen">
+        <div class="container">
+            <header>
+                <div class="brand">
+                    <h1>Kopi Cyclo</h1>
+                    <small>MUHAMMAD QUSYAIRI</small>
+                </div>
+                <div class="header-actions">
+                    <!-- Tombol Atur Modal -->
+                    <button class="btn-glass" onclick="openCapitalModal()"><i class="fas fa-wallet"></i> Atur Modal</button>
+                    
+                    <!-- Tombol Reset Data (Baru) -->
+                    <button class="btn-glass btn-reset" onclick="openResetModal()"><i class="fas fa-undo"></i> Reset Data</button>
+                    
+                    <!-- Tombol Logout -->
+                    <button class="btn-glass btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+                </div>
+            </header>
+            
+            <!-- Dashboard -->
+            <section class="stats-grid">
+                <div class="glass stat-card st-balance">
+                    <div class="stat-header">
+                        <span class="stat-label">Saldo Akhir</span>
+                        <div class="stat-icon c-blue"><i class="fas fa-coins"></i></div>
+                    </div>
+                    <div class="stat-value" id="dispBalance">$0.00</div>
+                </div>
+                
+                <div class="glass stat-card st-income">
+                    <div class="stat-header">
+                        <span class="stat-label">Pemasukan</span>
+                        <div class="stat-icon c-green"><i class="fas fa-arrow-down"></i></div>
+                    </div>
+                    <div class="stat-value" id="dispIncome">$0.00</div>
+                </div>
+
+                <div class="glass stat-card st-expense">
+                    <div class="stat-header">
+                        <span class="stat-label">Pengeluaran</span>
+                        <div class="stat-icon c-red"><i class="fas fa-arrow-up"></i></div>
+                    </div>
+                    <div class="stat-value" id="dispExpense">$0.00</div>
+                </div>
+
+                <div class="glass stat-card st-debt">
+                    <div class="stat-header">
+                        <span class="stat-label">Piutang</span>
+                        <div class="stat-icon c-yellow"><i class="fas fa-file-invoice"></i></div>
+                    </div>
+                    <div class="stat-value" id="dispDebt">$0.00</div>
+                </div>
+            </section>
+
+            <div class="main-grid">
+                <!-- Input Section -->
+                <section class="glass input-card">
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="switchTab('sale')"><i class="fas fa-cash-register"></i> Penjualan</button>
+                        <button class="tab-btn" onclick="switchTab('expense')"><i class="fas fa-shopping-cart"></i> Pengeluaran</button>
+                    </div>
+
+                    <!-- Form Penjualan -->
+                    <div id="formSale">
+                        <form id="formPenjualan">
+                            <div class="form-group">
+                                <label>Nama Menu / Pelanggan</label>
+                                <input type="text" id="saleName" class="input-field" placeholder="Kopi Susu - Budi" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Harga ($)</label>
+                                <input type="number" id="salePrice" class="input-field" placeholder="0.00" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Status</label>
+                                <select id="saleStatus" class="input-field">
+                                    <option value="lunas">Lunas (Uang Masuk)</option>
+                                    <option value="hutang">Hutang (Belum Bayar)</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn-submit">Simpan Penjualan</button>
+                        </form>
+                    </div>
+
+                    <!-- Form Pengeluaran -->
+                    <div id="formExpense" style="display: none;">
+                        <form id="formPengeluaran">
+                            <div class="form-group">
+                                <label>Item Pengeluaran</label>
+                                <input type="text" id="expName" class="input-field" placeholder="Beli Gula / Listrik" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Nominal ($)</label>
+                                <input type="number" id="expPrice" class="input-field" placeholder="0.00" step="0.01" required>
+                            </div>
+                            <button type="submit" class="btn-submit expense-mode">Catat Pengeluaran</button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- List Section -->
+                <section class="glass list-card">
+                    <div class="list-header">
+                        <h3 style="font-weight: 600;">Riwayat Transaksi</h3>
+                        <span class="badge" id="dateBadge">Hari Ini</span>
+                    </div>
+                    <div class="search-filter">
+                        <input type="text" id="searchBox" class="search-input" placeholder="Cari riwayat...">
+                        <select id="filterBox" class="input-field" style="width: 140px;">
+                            <option value="all">Semua</option>
+                            <option value="sale">Penjualan</option>
+                            <option value="expense">Pengeluaran</option>
+                        </select>
+                    </div>
+                    <div class="trans-list" id="listContainer">
+                        <!-- Data here -->
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Set Modal Awal -->
+    <div class="modal" id="capitalModal">
+        <div class="modal-box">
+            <h2 style="margin-bottom: 10px; color:white;">Atur Saldo Awal</h2>
+            <p style="color: #aaa; margin-bottom: 25px; font-size: 0.9rem;">Masukkan jumlah uang kas (Modal) saat mulai.</p>
+            <input type="number" id="inputCapital" class="input-field" placeholder="Contoh: 100.00" step="0.01" style="margin-bottom: 25px; background: rgba(255,255,255,0.05);">
+            <button class="btn-submit" onclick="saveCapital()">Simpan Modal</button>
+        </div>
+    </div>
+
+    <!-- Modal Reset Data (Baru) -->
+    <div class="modal" id="resetModal">
+        <div class="modal-box danger-mode">
+            <!-- Icon Peringatan -->
+            <div class="stat-icon c-red" style="margin: 0 auto 20px auto; width: 60px; height: 60px; font-size: 1.5rem; background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger-glow);">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            
+            <h2 style="color: white; margin-bottom: 10px;">Reset Sistem?</h2>
+            <p style="color: #ccc; margin-bottom: 25px; font-size: 0.9rem; line-height: 1.5;">
+                Tindakan ini akan <strong>menghapus SELURUH data</strong> (Modal, Penjualan, Pengeluaran).<br><br>
+                Anda akan otomatis keluar (logout) dan aplikasi akan kembali seperti baru.
+            </p>
+            
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-glass" onclick="closeResetModal()" style="flex: 1; justify-content: center; border: 1px solid rgba(255,255,255,0.2);">Batal</button>
+                <button class="btn-submit expense-mode" onclick="confirmReset()" style="flex: 1;">Ya, Hapus Semua</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- AUTHENTICATION LOGIC ---
+        function checkSession() {
+            const isLoggedIn = localStorage.getItem('kopiIsLoggedIn');
+            if (isLoggedIn === 'true') {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app-screen').style.display = 'block';
+                init(); // Start App
+            } else {
+                document.getElementById('login-screen').style.display = 'flex';
+                document.getElementById('app-screen').style.display = 'none';
+            }
+        }
+
+        function doLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            const err = document.getElementById('loginError');
+
+            // Hardcoded Credentials
+            if (u === 'admin123' && p === 'sadek123') {
+                localStorage.setItem('kopiIsLoggedIn', 'true');
+                err.style.display = 'none';
+                checkSession();
+            } else {
+                err.style.display = 'block';
+                // Shake effect logic could go here
+            }
+        }
+
+        function doLogout() {
+            if(confirm('Apakah Anda yakin ingin keluar?')) {
+                localStorage.removeItem('kopiIsLoggedIn');
+                location.reload(); // Refresh to go back to login
+            }
+        }
+
+        // --- RESET LOGIC (Fitur Baru) ---
+        function openResetModal() {
+            document.getElementById('resetModal').classList.add('active');
+        }
+
+        function closeResetModal() {
+            document.getElementById('resetModal').classList.remove('active');
+        }
+
+        function confirmReset() {
+            // Hapus Data Transaksi & Modal
+            localStorage.removeItem('kopiDataGlass');
+            // Hapus Status Login
+            localStorage.removeItem('kopiIsLoggedIn');
+            
+            // Refresh Halaman agar kembali ke awal
+            location.reload();
+        }
+
+        // --- APP LOGIC ---
+        let data = JSON.parse(localStorage.getItem('kopiDataGlass')) || {
+            capital: 0,
+            transactions: []
+        };
+
+        const elBalance = document.getElementById('dispBalance');
+        const elIncome = document.getElementById('dispIncome');
+        const elExpense = document.getElementById('dispExpense');
+        const elDebt = document.getElementById('dispDebt');
+        const listContainer = document.getElementById('listContainer');
+        const dateBadge = document.getElementById('dateBadge');
+
+        const today = new Date().toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+        dateBadge.innerText = today;
+
+        function init() {
+            if(!data.capital && data.transactions.length === 0) {
+                openCapitalModal();
+            }
+            calculateStats();
+            renderList();
+        }
+
+        function saveData() {
+            localStorage.setItem('kopiDataGlass', JSON.stringify(data));
+            calculateStats();
+            renderList();
+        }
+
+        function openCapitalModal() {
+            document.getElementById('capitalModal').classList.add('active');
+            document.getElementById('inputCapital').value = data.capital ? data.capital : '';
+        }
+
+        function saveCapital() {
+            const val = parseFloat(document.getElementById('inputCapital').value);
+            if(isNaN(val)) return;
+            data.capital = val;
+            saveData();
+            document.getElementById('capitalModal').classList.remove('active');
+        }
+
+        function switchTab(type) {
+            const btns = document.querySelectorAll('.tab-btn');
+            btns.forEach(b => b.classList.remove('active'));
+            
+            const formSale = document.getElementById('formSale');
+            const formExp = document.getElementById('formExpense');
+
+            if(type === 'sale') {
+                btns[0].classList.add('active');
+                formSale.style.display = 'block';
+                formExp.style.display = 'none';
+            } else {
+                btns[1].classList.add('active');
+                formSale.style.display = 'none';
+                formExp.style.display = 'block';
+            }
+        }
+
+        document.getElementById('formPenjualan').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newItem = {
+                id: Date.now(),
+                type: 'sale',
+                name: document.getElementById('saleName').value,
+                price: parseFloat(document.getElementById('salePrice').value),
+                status: document.getElementById('saleStatus').value,
+                date: new Date().toISOString()
+            };
+            data.transactions.unshift(newItem);
+            e.target.reset();
+            saveData();
+        });
+
+        document.getElementById('formPengeluaran').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newItem = {
+                id: Date.now(),
+                type: 'expense',
+                name: document.getElementById('expName').value,
+                price: parseFloat(document.getElementById('expPrice').value),
+                status: 'paid',
+                date: new Date().toISOString()
+            };
+            data.transactions.unshift(newItem);
+            e.target.reset();
+            saveData();
+        });
+
+        function deleteTrans(id) {
+            if(confirm('Hapus data ini?')) {
+                data.transactions = data.transactions.filter(t => t.id !== id);
+                saveData();
+            }
+        }
+
+        function toggleStatus(id) {
+            const t = data.transactions.find(x => x.id === id);
+            if(t && t.type === 'sale') {
+                t.status = t.status === 'lunas' ? 'hutang' : 'lunas';
+                saveData();
+            }
+        }
+
+        function calculateStats() {
+            let totalIncome = 0;
+            let totalExpense = 0;
+            let totalDebt = 0;
+
+            data.transactions.forEach(t => {
+                if (t.type === 'sale') {
+                    if (t.status === 'lunas') totalIncome += t.price; 
+                    else totalDebt += t.price; 
+                } else if (t.type === 'expense') {
+                    totalExpense += t.price; 
+                }
+            });
+
+            const finalBalance = data.capital + totalIncome - totalExpense;
+
+            elBalance.innerText = formatUSD(finalBalance);
+            elIncome.innerText = formatUSD(totalIncome);
+            elExpense.innerText = formatUSD(totalExpense);
+            elDebt.innerText = formatUSD(totalDebt);
+        }
+
+        function renderList() {
+            const search = document.getElementById('searchBox').value.toLowerCase();
+            const filter = document.getElementById('filterBox').value;
+
+            const filtered = data.transactions.filter(t => {
+                const matchSearch = t.name.toLowerCase().includes(search);
+                const matchFilter = filter === 'all' || t.type === filter;
+                return matchSearch && matchFilter;
+            });
+
+            listContainer.innerHTML = '';
+            
+            if(filtered.length === 0) {
+                listContainer.innerHTML = '<div style="text-align:center; padding:30px; color:rgba(255,255,255,0.4)">Tidak ada data</div>';
+                return;
+            }
+
+            filtered.forEach(t => {
+                const dateObj = new Date(t.date);
+                const time = dateObj.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+                
+                let icon, badge, pricePrefix, amountColor;
+
+                if(t.type === 'sale') {
+                    icon = 'fa-coffee';
+                    pricePrefix = '+ ';
+                    if(t.status === 'lunas') {
+                        amountColor = 'c-green';
+                        badge = '<span class="badge" style="color: #10B981; border-color: rgba(16,185,129,0.3);">LUNAS</span>';
+                    } else {
+                        amountColor = 'c-yellow';
+                        badge = '<span class="badge" style="color: #F59E0B; border-color: rgba(245,158,11,0.3);">HUTANG</badge>';
+                    }
+                } else {
+                    icon = 'fa-receipt';
+                    pricePrefix = '- ';
+                    amountColor = 'c-red';
+                    badge = '<span class="badge" style="color: #EF4444; border-color: rgba(239,68,68,0.3);">KELUAR</span>';
+                }
+
+                const html = `
+                <div class="trans-item">
+                    <div class="item-left">
+                        <div class="item-icon"><i class="fas ${icon}"></i></div>
+                        <div class="item-info">
+                            <h4>${t.name}</h4>
+                            <span>${time} • ${t.type === 'sale' ? 'Penjualan' : 'Pengeluaran'}</span>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center;">
+                        <div class="item-amount ${amountColor}" style="margin-right:15px;">
+                            ${pricePrefix}${formatUSD(t.price)}
+                        </div>
+                        ${t.type === 'sale' ? badge : ''}
+                        <div class="actions">
+                            ${t.type === 'sale' ? 
+                                `<button class="btn-icon" onclick="toggleStatus(${t.id})" title="Ubah Status"><i class="fas fa-sync"></i></button>` : ''
+                            }
+                            <button class="btn-icon" onclick="deleteTrans(${t.id})" title="Hapus"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>`;
+                listContainer.innerHTML += html;
+            });
+        }
+
+        function formatUSD(num) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+        }
+
+        document.getElementById('searchBox').addEventListener('input', renderList);
+        document.getElementById('filterBox').addEventListener('change', renderList);
+
+        // Start Login Check on Load
+        checkSession();
+
+    </script>
+</body>
+</html>
